@@ -1,16 +1,154 @@
 import mysql.connector as sql
+from getpass import getpass
+from shelf import Shelf
+from books import Book
+from openpyxl import load_workbook
+
+user_dat = {
+    "User_1": ["084101115116105110103064049050051", "USR"],
+    "Librarian": ["076105098114097114105097110064049050051", "LIB"],
+}
+# This dictionary can be stored in an sql database too
+
 
 class User:
-    def __init__(self, uname, passwd):
-        self.uname = uname
-        self.passwd = passwd
-    
-    
-class Basic(User):
-    def login():
-        self.priviledge = "basic"
-        self. uname = input("Enter your username: ")
-        __db = sql.connect(host="localhost", user="racl", passwd="", database="library_login")
-        __cur = __db.cursor()
+    def __init__(self, priv):
+
+        self.uname = input("\nUsername: ")
+        if priv != user_dat[self.uname][1]:
+            print("\n\nYou don't have permission to log into this section\n\n")
+        else:
+            self.passwd = pass_hash(getpass("\nPassword: "))
+            if self.passwd == user_dat[self.uname][0]:
+                print("Logged In!\n\n")
+                del self.passwd
+
+            else:
+                print("Wrong password\n\n")
 
 
+class Basic_User(User):
+    def __init__(self):
+        self.priv = "USR"
+        super().__init__(self.priv)
+
+    def book_actions(self, book_obj):
+        book_obj.get_status()
+        if book_obj.status != "Available":
+            print(
+                f"Sorry the book is already {book_obj.status}, Try again after the book is available"
+            )
+        else:
+            choice = input("What do you want to do:\n1.Issue Book\n2.Reserve Book\n>>")
+            for choice in [1, 2]:
+                if choice == 1:
+                    book_obj.issue_book(self)
+                elif choice == 2:
+                    book_obj.reserve_book(self)
+
+    def options(self):
+        while True:
+            choice = int(
+                input(
+                    "1.Search Genre\n2.Search Book via Book Title\n3.Search Book Via ISBN\n4.Search Book Via Author Name\n5.Return Book\n0.Logout\n>>"
+                )
+            )
+            if choice in range(0, 6):
+                wb = load_workbook(filename="lms_books.xlsx")
+                wb_sheet = wb.active
+                if choice == 1:
+                    genre_shelf = Shelf(input("\n\nEnter the Genre: "))
+                    genre_shelf.show_calalog()
+                    # TODO Complete this
+                elif choice == 2:
+                    query = input("\nEnter the Book Title: ")
+                    for i in range(2, wb_sheet.max_row + 1):
+                        cell = wb_sheet.cell(row=i, column=1)
+                        if str(cell.value).lower() == query.lower():
+                            result_book = Book(
+                                wb_sheet.cell(row=i, column=1).value,
+                                wb_sheet.cell(row=i, column=2).value,
+                                wb_sheet.cell(row=i, column=3).value,
+                                wb_sheet.cell(row=i, column=4).value,
+                            )
+                            print(result_book)
+                            break
+                        else:
+                            print("The Book is not in the library database")
+                    self.book_actions(result_book)
+                elif choice == 3:
+                    query = int(input("\nEnter the Book ISBN Number: "))
+                    for i in range(2, wb_sheet.max_row + 1):
+                        cell = wb_sheet.cell(row=i, column=2)
+                        if cell.value == query:
+                            result_book = Book(
+                                wb_sheet.cell(row=i, column=1).value,
+                                wb_sheet.cell(row=i, column=2).value,
+                                wb_sheet.cell(row=i, column=3).value,
+                                wb_sheet.cell(row=i, column=4).value,
+                            )
+                            print(result_book)
+                            break
+                        else:
+                            print("The Book is not in the library database")
+                    self.book_actions(result_book)
+                elif choice == 4:
+                    query = input("\nEnter the Author's Name: ")
+                    books = []
+                    for i in range(2, wb_sheet.max_row + 1):
+                        cell = wb_sheet.cell(row=i, column=3)
+                        if str(cell.value).lower() == query.lower():
+                            result_book = Book(
+                                wb_sheet.cell(row=i, column=1).value,
+                                wb_sheet.cell(row=i, column=2).value,
+                                wb_sheet.cell(row=i, column=3).value,
+                                wb_sheet.cell(row=i, column=4).value,
+                            )
+                            books.append(result_book)
+                        else:
+                            print("The Author is not in the library database")
+                    for i in range(len(books)):
+                        print(f"\n\n=====Book No.{i}=====")
+                        print(books[i])
+                    # TODO Add which book functionality
+                elif choice == 5:
+                    isbn = int(
+                        input("Enter the ISBN number of the book you want to return: ")
+                    )
+                    for i in range(2, wb_sheet.max_row + 1):
+                        cell = wb_sheet.cell(row=i, column=2)
+                        if cell.value == isbn:
+                            result_book = Book(
+                                wb_sheet.cell(row=i, column=1).value,
+                                wb_sheet.cell(row=i, column=2).value,
+                                wb_sheet.cell(row=i, column=3).value,
+                                wb_sheet.cell(row=i, column=4).value,
+                            )
+                            break
+                        else:
+                            print("The Book is not in the library database")
+                    result_book.get_status()
+                    if result_book.status != "Issued":
+                        print("\n\nThe book is not issued no need to return")
+                    elif result_book.status == "Issued":
+                        result_book.return_book()
+                elif choice == 0:
+                    wb.close()
+                    break
+
+
+class Librarian(User):
+    def __init__(self):
+        self.priv = "LIB"
+        super().__init__(self.priv)
+        self.options = """"""
+
+
+def pass_hash(
+    passwd,
+):  # Very basic hashing algorithm just to not store passwords in plain text
+    passwd_hash = [str(ord(x)) for x in passwd]
+    for i in range(len(passwd_hash)):
+        if len(passwd_hash[i]) != 3:
+            passwd_hash[i] = "0" * (3 - len(passwd_hash[i])) + passwd_hash[i]
+    return "".join(passwd_hash)
