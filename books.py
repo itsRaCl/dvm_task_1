@@ -27,7 +27,7 @@ class Book:
         if self.status == "Issued":
             self.issued_date = date_start
             self.return_date = date_end
-            print(Fore.RED + f"Status: Issued {self.return_end}" + Fore.WHITE)
+            print(Fore.RED + f"Status: Issued {self.return_date}" + Fore.WHITE)
 
         elif self.status == "Reserved":
             self.reserve_start = date_start
@@ -49,7 +49,9 @@ class Book:
                 wb_sheet.cell(row=i, column=5).value = "Available"
                 wb_sheet.cell(row=i, column=6).value = 0
                 wb_sheet.cell(row=i, column=7).value = 0
+                wb_sheet.cell(row=i, column=8).value = 0
                 break
+        print(Fore.GREEN + "\n\nBook Successfully Returned\n\n" + Fore.WHITE)
         wb.save("lms_books.xlsx")
 
     def issue_book(self, user):
@@ -63,18 +65,40 @@ class Book:
                     int(x)
                     for x in input("Enter end date in format (yyyy-mm-dd): ").split("-")
                 ]
-                if ret_date[0] >= date.today().year:
-                    if ret_date[1] >= date.today().month:
+                if ret_date[0] == date.today().year:
+                    if ret_date[1] == date.today().month:
                         if ret_date[2] > date.today().day:
                             wb_sheet.cell(row=i, column=7).value = date(
                                 ret_date[0], ret_date[1], ret_date[2]
                             )
-                            wb_sheet.cell(row=1, column=8).value = user.uname
+                            wb_sheet.cell(row=i, column=8).value = user.uname
+                            print(
+                                Fore.GREEN
+                                + "\n\nBook Successfully Issued\n\n"
+                                + Fore.WHITE
+                            )
                             wb.save("lms_books.xlsx")
                         else:
                             print("\nEnter a valid date")
+                    elif ret_date[1] > date.today().month:
+                        wb_sheet.cell(row=i, column=7).value = date(
+                            ret_date[0], ret_date[1], ret_date[2]
+                        )
+                        wb_sheet.cell(row=i, column=8).value = user.uname
+                        print(
+                            Fore.GREEN + "\n\nBook Successfully Issued\n\n" + Fore.WHITE
+                        )
+                        wb.save("lms_books.xlsx")
+
                     else:
                         print("\nEnter a valid date")
+                elif ret_date[0] > date.today().year:
+                    wb_sheet.cell(row=i, column=7).value = date(
+                        ret_date[0], ret_date[1], ret_date[2]
+                    )
+                    wb_sheet.cell(row=i, column=8).value = user.uname
+                    print(Fore.GREEN + "\n\nBook Successfully Issued\n\n" + Fore.WHITE)
+                    wb.save("lms_books.xlsx")
                 else:
                     print("\nEnter a valid date")
 
@@ -90,16 +114,25 @@ class Book:
                     int(x)
                     for x in input("Enter start date in format (yyyy-mm-dd)").split("-")
                 ]
-                if res_start_date[0] >= date.today().year:
-                    if res_start_date[1] >= date.today().month:
+                if res_start_date[0] == date.today().year:
+                    if res_start_date[1] == date.today().month:
                         if res_start_date[2] > date.today().day:
                             wb_sheet.cell(row=i, column=6).value = date(
                                 res_start_date[0], res_start_date[1], res_start_date[2]
                             )
                         else:
                             print("\nEnter a valid date")
+                    elif res_start_date[1] == date.today().month:
+                        wb_sheet.cell(row=i, column=6).value = date(
+                            res_start_date[0], res_start_date[1], res_start_date[2]
+                        )
                     else:
                         print("\nEnter a valid date")
+                elif res_start_date[0] > date.today().year:
+                    wb_sheet.cell(row=i, column=6).value = date(
+                        res_start_date[0], res_start_date[1], res_start_date[2]
+                    )
+
                 else:
                     print("\nEnter a valid date")
 
@@ -107,18 +140,43 @@ class Book:
                     int(x)
                     for x in input("Enter end date in format (yyyy-mm-dd)").split("-")
                 ]
-                if res_end_date[0] >= res_start_date[0]:
-                    if res_end_date[1] >= res_start_date[1]:
+                if res_end_date[0] == res_start_date[0]:
+                    if res_end_date[1] == res_start_date[1]:
                         if res_end_date[2] > res_start_date[2]:
                             wb_sheet.cell(row=i, column=7).value = date(
                                 res_end_date[0], res_end_date[1], res_end_date[2]
                             )
-                            wb_sheet.cell(row=1, column=8).value = user.uname
+                            wb_sheet.cell(row=i, column=8).value = user.uname
+                            print(
+                                Fore.GREEN
+                                + "\n\nBook Successfully Reserved\n\n"
+                                + Fore.WHITE
+                            )
                             wb.save("lms_books.xlsx")
                         else:
                             print("\nEnter a valid date")
+                    elif res_end_date[1] > res_start_date[1]:
+                        wb_sheet.cell(row=i, column=7).value = date(
+                            res_end_date[0], res_end_date[1], res_end_date[2]
+                        )
+                        wb_sheet.cell(row=i, column=8).value = user.uname
+                        print(
+                            Fore.GREEN
+                            + "\n\nBook Successfully Reserved\n\n"
+                            + Fore.WHITE
+                        )
+                        wb.save("lms_books.xlsx")
                     else:
                         print("\nEnter a valid date")
+                elif res_end_date[0] > res_start_date[0]:
+                    wb_sheet.cell(row=i, column=7).value = date(
+                        res_end_date[0], res_end_date[1], res_end_date[2]
+                    )
+                    wb_sheet.cell(row=i, column=8).value = user.uname
+                    print(
+                        Fore.GREEN + "\n\nBook Successfully Reserved\n\n" + Fore.WHITE
+                    )
+                    wb.save("lms_books.xlsx")
                 else:
                     print("\nEnter a valid date")
 
