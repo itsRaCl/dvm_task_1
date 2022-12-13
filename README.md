@@ -4,3 +4,7 @@ Extra modules used:
 - openpyxl
 - datetime
 - getpass
+
+Passwords for the users are
+- User_1 : Testing@123
+- Librarian: Librarian@123
