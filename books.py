@@ -32,7 +32,7 @@ class Book:
 
         elif self.status == "Reserved":
             self.reserve_start = date_start
-            self.reserve_start = date_end
+            self.reserve_end = date_end
             print(
                 Fore.YELLOW
                 + f"Status: Reserved from {self.reserve_start} upto {self.reserve_end}"
@@ -42,7 +42,7 @@ class Book:
             print(Fore.GREEN + "Status: Available" + Fore.WHITE)
         wb.close()
 
-    def return_book(self):
+    def return_book(self, return_user):
         wb = load_workbook(filename="lms_books.xlsx")
         wb_sheet = wb.active
         for i in range(2, wb_sheet.max_row + 1):
@@ -54,9 +54,26 @@ class Book:
                 break
         print(Fore.GREEN + "\n\nBook Successfully Returned\n\n" + Fore.WHITE)
         wb.save("lms_books.xlsx")
+        logging.basicConfig(
+            filename="lms.log",
+            format="%(asctime)s %(message)s",
+            filemode="a",
+        )
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG)
+
+        logger.info(f"{self.name} by {self.author} returned by {return_user}")
         return True
 
     def issue_book(self, user):
+        logging.basicConfig(
+            filename="lms.log",
+            format="%(asctime)s %(message)s",
+            filemode="a",
+        )
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG)
+
         def enter_issue_date():
             wb_sheet.cell(row=i, column=6).value = date.today()
             try:
@@ -77,6 +94,9 @@ class Book:
                                 + Fore.WHITE
                             )
                             wb.save("lms_books.xlsx")
+                            logger.info(
+                                f"{self.name} by {self.author} issued to {user.uname} upto {'-'.join([ str(x) for x in ret_date])}"
+                            )
                             return True
                         else:
                             print("\nEnter a valid date")
@@ -90,6 +110,9 @@ class Book:
                             Fore.GREEN + "\n\nBook Successfully Issued\n\n" + Fore.WHITE
                         )
                         wb.save("lms_books.xlsx")
+                        logger.info(
+                            f"{self.name} by {self.author} issued to {user.uname} upto {'-'.join([ str(x) for x in ret_date])}"
+                        )
                         return True
 
                     else:
@@ -122,6 +145,14 @@ class Book:
                 break
 
     def reserve_book(self, user):
+        logging.basicConfig(
+            filename="lms.log",
+            format="%(asctime)s %(message)s",
+            filemode="a",
+        )
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG)
+
         def enter_reserve_date():
             try:
                 res_start_date = [
@@ -172,6 +203,9 @@ class Book:
                                 + Fore.WHITE
                             )
                             wb.save("lms_books.xlsx")
+                            logger.info(
+                                f"{self.name} by {self.author} reserved for {user.uname} from {'-'.join([str(x) for x in res_start_date])} upto {'-'.join([ str(x) for x in res_end_date])}"
+                            )
                             return True
                         else:
                             print("\nEnter a valid date")
@@ -187,6 +221,9 @@ class Book:
                             + Fore.WHITE
                         )
                         wb.save("lms_books.xlsx")
+                        logger.info(
+                            f"{self.name} by {self.author} reserved for {user.uname} from {'-'.join([str(x) for x in res_start_date])} upto {'-'.join([ str(x) for x in res_end_date])}"
+                        )
                         return True
                     else:
                         print("\nEnter a valid date")
@@ -200,6 +237,9 @@ class Book:
                         Fore.GREEN + "\n\nBook Successfully Reserved\n\n" + Fore.WHITE
                     )
                     wb.save("lms_books.xlsx")
+                    logger.info(
+                        f"{self.name} by {self.author} reserved for {user.uname} from {'-'.join([str(x) for x in res_start_date])} upto {'-'.join([ str(x) for x in res_end_date])}"
+                    )
                     return True
                 else:
                     print("\nEnter a valid date")

@@ -7,7 +7,7 @@ def populate(genre, file):
     wb = load_workbook(filename=file)
     wb_sheet = wb.active
     for i in range(2, wb_sheet.max_row + 1):
-        if wb_sheet.cell(row=i, column=4).value == genre:
+        if str(wb_sheet.cell(row=i, column=4).value).lower() == genre:
             result_book = Book(
                 wb_sheet.cell(row=i, column=1).value,
                 wb_sheet.cell(row=i, column=2).value,

@@ -73,13 +73,14 @@ class Shelf:
                 "You are not allowed to remove books from a shelf, please check your permissions and try again"
             )
 
-    def add_book(self, user, shelf):
+    def add_book(self, user):
         if user.priv == "LIB":
             name = input("Enter the name of the book")
             try:
                 isbn = int(input("Enter the isbn number: "))
                 author = input("Enter authors name: ")
-                book = Book(name, isbn, author, shelf.genre)
+                book = Book(name, isbn, author, self.genre)
+                self.books.append(book)
                 wb = load_workbook(filename="lms_books.xlsx")
                 wb_sheet = wb.active
                 wb_sheet.append(

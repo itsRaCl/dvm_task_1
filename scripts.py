@@ -1,4 +1,5 @@
 from books import Book
+from openpyxl import load_workbook
 
 
 def pass_hash(
@@ -18,3 +19,19 @@ def create_book(wb_sheet, i):
         wb_sheet.cell(row=i, column=3).value,
         wb_sheet.cell(row=i, column=4).value,
     )
+
+
+def list_genres():
+    wb = load_workbook(filename="lms_books.xlsx")
+    wb_sheet = wb.active
+    genres = set()
+    for i in range(2, wb_sheet.max_row + 1):
+        value = str(wb_sheet.cell(row=i, column=4).value)
+        if value != "None":
+            genres.add(value)
+
+    count = 1
+    print("List of Genres:\n")
+    for i in genres:
+        print(f"{count}. {i.capitalize()}")
+        count += 1

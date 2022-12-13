@@ -1,8 +1,8 @@
-import mysql.connector as sql
 from getpass import getpass
 from shelf import Shelf
 from openpyxl import load_workbook
-from scripts import pass_hash, create_book
+from scripts import pass_hash, create_book, list_genres
+import datetime
 
 user_dat = {
     "User_1": ["084101115116105110103064049050051", "USR"],
@@ -18,6 +18,7 @@ class User:
         if self.uname in user_dat:
             if priv != user_dat[self.uname][1]:
                 print("\n\nYou don't have permission to log into this section\n\n")
+                exit()
             else:
                 self.passwd = pass_hash(getpass("\nPassword: "))
                 if self.passwd == user_dat[self.uname][0]:
@@ -44,13 +45,17 @@ class Basic_User(User):
             )
         else:
             choice = int(
-                input("What do you want to do:\n1.Issue Book\n2.Reserve Book\n>>")
+                input(
+                    "What do you want to do:\n1.Issue Book\n2.Reserve Book\n0. Exit\n>>"
+                )
             )
-            if choice in [1, 2]:
+            if choice in [0, 1, 2]:
                 if choice == 1:
                     book_obj.issue_book(self)
                 if choice == 2:
                     book_obj.reserve_book(self)
+                if choice == 0:
+                    return
             else:
                 print("Enter a valid choice")
                 self.book_actions(self, book_obj)
@@ -59,14 +64,15 @@ class Basic_User(User):
         while True:
             choice = int(
                 input(
-                    "1.Search Genre\n2.Search Book via Book Title\n3.Search Book Via ISBN\n4.Search Book Via Author Name\n5.Return Book\n0.Logout\n>>"
+                    "\n\n1.Search Genre\n2.Search Book via Book Title\n3.Search Book Via ISBN\n4.Search Book Via Author Name\n5.Return Book\n0.Logout\n>>"
                 )
             )
             if choice in range(0, 6):
                 wb = load_workbook(filename="lms_books.xlsx")
                 wb_sheet = wb.active
                 if choice == 1:
-                    genre_shelf = Shelf(input("\n\nEnter the Genre: "))
+                    list_genres()
+                    genre_shelf = Shelf(input("\n\nEnter the Genre: ").lower())
                     Shelf.show_catalog(genre_shelf.genre, genre_shelf.books)
                     book_index = (
                         int(input("\nEnter the serial number of the book: ")) - 1
@@ -109,30 +115,32 @@ class Basic_User(User):
                     if len(books) == 0:
                         print("The Author is not in the database")
                     else:
-                        for i in range(len(books)):
-                            print(f"\n\n=====Book No.{i+1}=====")
-                            print(str(books[i]) + "\n\n")
+                        Shelf.show_catalog(query, books)
                         n = int(input("Which book do you want to select:"))
                         self.book_actions(books[n - 1])
                 elif choice == 5:
-                    isbn = int(
-                        input("Enter the ISBN number of the book you want to return: ")
-                    )
+                    wb = load_workbook(filename="lms_books.xlsx")
+                    wb_sheet = wb.active
+                    books = []
                     for i in range(2, wb_sheet.max_row + 1):
-                        cell = wb_sheet.cell(row=i, column=2)
-                        if cell.value == isbn:
-                            result_book = create_book(wb_sheet, i)
-                            reserved_by = wb_sheet.cell(row=i, column=8).value
-                            break
-                        else:
-                            print("The Book is not in the library database")
-                    result_book.get_status()
-                    if result_book.status != "Issued":
-                        print("\n\nThe book is not issued no need to return")
-                    elif result_book.status == "Issued" and self.uname == reserved_by:
-                        result_book.return_book()
+                        if wb_sheet.cell(row=i, column=8).value == self.uname:
+                            books.append(create_book(wb_sheet, i))
+                    if len(books) != 0:
+                        Shelf.show_catalog(f"Books Issued by {self.uname}", books)
+
+                        choice = (
+                            int(
+                                input(
+                                    "Enter the Sr No of the book you want to return: "
+                                )
+                            )
+                            - 1
+                        )
+                        if choice < len(books):
+                            books[choice].return_book(self.uname)
                     else:
-                        print("\n\nBook has not been issued to you\n\n")
+                        print("You have no issued books")
+
                 elif choice == 0:
                     wb.close()
                     break
@@ -152,22 +160,60 @@ class Librarian(User):
             )
             if choice in [0, 1, 2]:
                 if choice == 2:
-                    genre = input("Enter the Genre you want to manage: ")
+                    list_genres()
+                    genre = input("Enter the Genre you want to manage: ").lower()
                     genre_shelf = Shelf(genre)
                     Shelf.show_catalog(genre_shelf.genre + " Books", genre_shelf.books)
                     while True:
-                        sub_choice = int(input("1.Add Book\n2.Remove Book\n0.Exit\n>>"))
-                        if sub_choice in [0, 1, 2]:
+                        sub_choice = int(
+                            input(
+                                "1.Add Book\n2.Remove Book\n3.See All Books\n0.Exit\n>>"
+                            )
+                        )
+                        if sub_choice in [0, 1, 2, 3]:
                             if sub_choice == 2:
                                 genre_shelf.remove_book(self)
                             if sub_choice == 1:
-                                genre_shelf.add_book(self, genre_shelf)
+                                genre_shelf.add_book(self)
                             if sub_choice == 0:
                                 break
+                            if sub_choice == 3:
+                                Shelf.show_catalog(genre_shelf.genre, genre_shelf.books)
 
                 elif choice == 1:
                     books = self.get_issued_books()
-
+                    print("\n\n\n" + "=" * 113)
+                    print("|{:^111}|".format("Issued Books"))
+                    print("=" * 113)
+                    # Making a table of books, column headers Name ISBN Author Genre
+                    print(
+                        "|{:^5}|{:^10}|{:^20}|{:^20}|{:^10}|{:^20}|{:^20}|".format(
+                            "Sr No",
+                            "Name",
+                            "ISBN No.",
+                            "Author",
+                            "Genre",
+                            "Issued Upto",
+                            "Issued By",
+                        )
+                    )
+                    print("=" * 113)
+                    for i in books:
+                        print(
+                            "|{:^5}|{:^10}|{:^20}|{:^20}|{:^10}|{:^20}|{:^20}|".format(
+                                books.index(i) + 1,
+                                i[0].name,
+                                i[0].isbn,
+                                i[0].author,
+                                i[0].genre,
+                                "-".join(
+                                    [str(i[1].day), str(i[1].month), str(i[1].year)]
+                                ),
+                                i[2],
+                            )
+                        )
+                        print("-" * 113)
+                    print("\n\n")
                 elif choice == 0:
                     print("Logging Out!\n\nBye!\n\n")
                     break
@@ -177,6 +223,12 @@ class Librarian(User):
         wb = load_workbook(filename="lms_books.xlsx")
         wb_sheet = wb.active
         for i in range(2, wb_sheet.max_row + 1):
-            if wb_sheet.cell(row=i, column=4).value == "Issued":
-                books.append(create_book(wb_sheet, i))
+            if wb_sheet.cell(row=i, column=5).value == "Issued":
+                books.append(
+                    [
+                        create_book(wb_sheet, i),
+                        wb_sheet.cell(row=i, column=7).value,
+                        wb_sheet.cell(row=i, column=8).value,
+                    ]
+                )
         return books

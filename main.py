@@ -1,5 +1,6 @@
 from users import Basic_User, Librarian
 from time import sleep
+import logging
 
 
 def cprint(string):
@@ -21,7 +22,7 @@ def user_init():
             return user_init()
     except ValueError:
         print("\n\nEnter either 1 or 2 corresponding to the correct options\n\n")
-        user = user_init()
+        return user_init()
 
 
 cprint(
@@ -50,6 +51,8 @@ cprint(
 """
 )
 
-
-user = user_init()
-user.options()
+try:
+    user = user_init()
+    user.options()
+except KeyboardInterrupt:
+    print("\nCtrl + C pressed program terminated")
