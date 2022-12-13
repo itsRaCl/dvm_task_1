@@ -35,3 +35,4 @@ def list_genres():
     for i in genres:
         print(f"{count}. {i.capitalize()}")
         count += 1
+    return list(genres)

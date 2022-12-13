@@ -19,24 +19,24 @@ class Shelf:
     @staticmethod
     def show_catalog(title, books):
 
-        print("\n\n\n" + "=" * 106)
-        print("|{:^104}|".format(title))
-        print("=" * 106)
+        print("\n\n\n" + "=" * 136)
+        print("|{:^134}|".format(title))
+        print("=" * 136)
         # Making a table of books, column headers Name ISBN Author Genre
         print(
-            "|{:^20}|{:^20}|{:^20}|{:^20}|{:^20}|".format(
-                "Sr No.", "Name", "ISBN No.", "Author", "Genre"
+            "|{:^5}|{:^55}|{:^20}|{:^30}|{:^20}|".format(
+                "Sr No", "Name", "ISBN No.", "Author", "Genre"
             )
         )
-        print("=" * 106)
+        print("=" * 136)
         for i in books:
 
             print(
-                "|{:^20}|{:^20}|{:^20}|{:^20}|{:^20}|".format(
+                "|{:^5}|{:^55}|{:^20}|{:^30}|{:^20}|".format(
                     books.index(i) + 1, i.name, i.isbn, i.author, i.genre
                 )
             )
-            print("-" * 106)
+            print("-" * 136)
         print("\n\n")
 
     def remove_book(self, user):
