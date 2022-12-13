@@ -21,7 +21,7 @@ def user_init():
             return user_init()
     except ValueError:
         print("\n\nEnter either 1 or 2 corresponding to the correct options\n\n")
-        user_init()
+        user = user_init()
 
 
 cprint(

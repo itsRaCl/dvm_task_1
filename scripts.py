@@ -1,3 +1,6 @@
+from books import Book
+
+
 def pass_hash(
     passwd,
 ):  # Very basic hashing algorithm just to not store passwords in plain text
