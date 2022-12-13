@@ -68,19 +68,14 @@ class Basic_User(User):
                 wb_sheet = wb.active
                 if choice == 1:
                     genre_shelf = Shelf(input("\n\nEnter the Genre: "))
-                    genre_shelf.show_calalog()
+                    Shelf.show_catalog(genre_shelf.genre, genre_shelf.books)
                     # TODO Complete this
                 elif choice == 2:
                     query = input("\nEnter the Book Title: ")
                     for i in range(2, wb_sheet.max_row + 1):
                         cell = wb_sheet.cell(row=i, column=1)
                         if str(cell.value).lower() == query.lower():
-                            result_book = Book(
-                                wb_sheet.cell(row=i, column=1).value,
-                                wb_sheet.cell(row=i, column=2).value,
-                                wb_sheet.cell(row=i, column=3).value,
-                                wb_sheet.cell(row=i, column=4).value,
-                            )
+                            result_book = create_book(wb_sheet, i)
                             print(result_book)
                             break
                         else:
@@ -91,12 +86,7 @@ class Basic_User(User):
                     for i in range(2, wb_sheet.max_row + 1):
                         cell = wb_sheet.cell(row=i, column=2)
                         if cell.value == query:
-                            result_book = Book(
-                                wb_sheet.cell(row=i, column=1).value,
-                                wb_sheet.cell(row=i, column=2).value,
-                                wb_sheet.cell(row=i, column=3).value,
-                                wb_sheet.cell(row=i, column=4).value,
-                            )
+                            result_book = create_book(wb_sheet, i)
                             print(result_book)
                             break
                         else:
@@ -108,12 +98,7 @@ class Basic_User(User):
                     for i in range(2, wb_sheet.max_row + 1):
                         cell = wb_sheet.cell(row=i, column=3)
                         if str(cell.value).lower().strip() == query.lower().strip():
-                            result_book = Book(
-                                wb_sheet.cell(row=i, column=1).value,
-                                wb_sheet.cell(row=i, column=2).value,
-                                wb_sheet.cell(row=i, column=3).value,
-                                wb_sheet.cell(row=i, column=4).value,
-                            )
+                            result_book = create_book(wb_sheet, i)
                             books.append(result_book)
                     if len(books) == 0:
                         print("The Author is not in the database")
@@ -123,7 +108,6 @@ class Basic_User(User):
                             print(str(books[i]) + "\n\n")
                         n = int(input("Which book do you want to select:"))
                         self.book_actions(books[n - 1])
-                        # TODO Add which book functionality
                 elif choice == 5:
                     isbn = int(
                         input("Enter the ISBN number of the book you want to return: ")
@@ -131,12 +115,7 @@ class Basic_User(User):
                     for i in range(2, wb_sheet.max_row + 1):
                         cell = wb_sheet.cell(row=i, column=2)
                         if cell.value == isbn:
-                            result_book = Book(
-                                wb_sheet.cell(row=i, column=1).value,
-                                wb_sheet.cell(row=i, column=2).value,
-                                wb_sheet.cell(row=i, column=3).value,
-                                wb_sheet.cell(row=i, column=4).value,
-                            )
+                            result_book = create_book(wb_sheet, i)
                             reserved_by = wb_sheet.cell(row=i, column=8).value
                             break
                         else:
@@ -158,8 +137,27 @@ class Librarian(User):
         self.priv = "LIB"
         super().__init__(self.priv)
 
-    def options():
-        pass
+    def options(self):
+        while True:
+            choice = int(
+                input("Options:\n1.See Issued Books\n2.Manage Books by genre\n0.Logout")
+            )
+            if choice in [0, 1, 2]:
+                if choice == 2:
+                    genre = input("Enter the Genre you want to manage: ")
+                    genre_shelf = Shelf(genre)
+                    choice = int(input("1.Add Book\n2.Remove Book\n0.Logout\n>>"))
+                elif choice == 1:
+                    self.get_issued_books()
+
+    def get_issued_books():
+        books = []
+        wb = load_workbook(filename="lms_books.xlsx")
+        wb_sheet = wb.active
+        for i in range(2, wb._sheet.max_row + 1):
+            if wb_sheet.cell(row=i, column=4).value == "Issued":
+                books.append(create_book(wb_sheet, i))
+        return books
 
 
 def pass_hash(
@@ -170,3 +168,12 @@ def pass_hash(
         if len(passwd_hash[i]) != 3:
             passwd_hash[i] = "0" * (3 - len(passwd_hash[i])) + passwd_hash[i]
     return "".join(passwd_hash)
+
+
+def create_book(wb_sheet, i):
+    return Book(
+        wb_sheet.cell(row=i, column=1).value,
+        wb_sheet.cell(row=i, column=2).value,
+        wb_sheet.cell(row=i, column=3).value,
+        wb_sheet.cell(row=i, column=4).value,
+    )

@@ -9,15 +9,19 @@ def cprint(string):
 
 
 def user_init():
-    choice = int(input("Enter User Type:\n1. Basic User\n2. Librarian\n>>"))
-    if choice in [1, 2]:
-        if choice == 1:
-            return Basic_User()
-        elif choice == 2:
-            return Librarian()
-    else:
-        print("Enter a valid choice")
-        return user_init()
+    try:
+        choice = int(input("Enter User Type:\n1. Basic User\n2. Librarian\n>>"))
+        if choice in [1, 2]:
+            if choice == 1:
+                return Basic_User()
+            elif choice == 2:
+                return Librarian()
+        else:
+            print("Enter a valid choice")
+            return user_init()
+    except ValueError:
+        print("\n\nEnter either 1 or 2 corresponding to the correct options\n\n")
+        user_init()
 
 
 cprint(
@@ -46,15 +50,6 @@ cprint(
 """
 )
 
-while True:
-    user = user_init()
-    user.options()
-    choice = int(input("What do you want to do\n1. Login another user\n2.Exit\n>>"))
-    if choice in [1, 2]:
-        if choice == 1:
-            del user
-        else:
-            break
-    else:
-        print("Invalid choice selected\n Program Exited")
-        break
+
+user = user_init()
+user.options()
