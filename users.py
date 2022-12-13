@@ -79,7 +79,9 @@ class Basic_User(User):
                     if choice == 1:
                         genres_list = list_genres()
                         genre_shelf = Shelf(
-                            genres_list[int(input("\n\nEnter the Genre: ")) - 1].lower()
+                            genres_list[
+                                int(input("\n\nEnter the Genre number: ")) - 1
+                            ].lower()
                         )
                         Shelf.show_catalog(genre_shelf.genre, genre_shelf.books)
                         while True:
@@ -179,9 +181,17 @@ class Librarian(User):
                 )
                 if choice in [0, 1, 2]:
                     if choice == 2:
-                        list_genres()
-                        genre = input("Enter the Genre you want to manage: ").lower()
-                        genre_shelf = Shelf(genre)
+                        genres_list = list_genres()
+                        genre_shelf = Shelf(
+                            genres_list[
+                                int(
+                                    input(
+                                        "\n\nEnter the Genre Number you want to manage: "
+                                    )
+                                )
+                                - 1
+                            ].lower()
+                        )
                         Shelf.show_catalog(
                             genre_shelf.genre + " Books", genre_shelf.books
                         )
